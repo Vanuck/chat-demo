@@ -19,6 +19,7 @@ const Chat = ({ route, navigation }) => {
     );
   };
 
+  // Customize speech bubble
   const renderBubble = (props) => {
     return (
       <Bubble
@@ -34,6 +35,11 @@ const Chat = ({ route, navigation }) => {
       />
     );
   };
+
+  // useEffect hook to set navigation options
+  useEffect(() => {
+    navigation.setOptions({ title: name });
+  }, []);
 
   // useEffect hook to set messages options
   useEffect(() => {
@@ -55,11 +61,6 @@ const Chat = ({ route, navigation }) => {
         system: true,
       },
     ]);
-  }, []);
-
-  // useEffect hook to set navigation options
-  useEffect(() => {
-    navigation.setOptions({ title: name });
   }, []);
 
   /* Render a View component with dynamic background color */
@@ -88,8 +89,6 @@ const Chat = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "88%",
-    height: "88%",
   },
   appTitle: {
     fontSize: 45,
