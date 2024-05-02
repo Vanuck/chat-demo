@@ -26,10 +26,10 @@ const Chat = ({ route, navigation }) => {
         {...props}
         wrapperStyle={{
           right: {
-            backgroundColor: "#484848",
+            backgroundColor: "#6495ED",
           },
           left: {
-            backgroundColor: "#fff",
+            backgroundColor: "#EB984E",
           },
         }}
       />
@@ -51,7 +51,7 @@ const Chat = ({ route, navigation }) => {
         user: {
           _id: 2,
           name: "React Native",
-          avatar: "https://placeimg.com/140/140/any",
+          avatar: "https://placehold.co/400x400",
         },
       },
       {
@@ -68,6 +68,8 @@ const Chat = ({ route, navigation }) => {
     <View style={[styles.container, { backgroundColor: background }]}>
       <Text style={styles.appTitle}>Time to Chat!</Text>
       <GiftedChat
+        bottomOffset={220}
+        placeholder={"Type Here"}
         messages={messages}
         renderBubble={renderBubble}
         onSend={(messages) => onSend(messages)}
@@ -89,14 +91,16 @@ const Chat = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: "99%",
+    height: "98%",
   },
   appTitle: {
-    fontSize: 45,
+    fontSize: 25,
     fontWeight: "600",
     color: "#ECF00F",
     justifyContent: "center",
     alignItems: "center",
-    margin: 20,
+    margin: 10,
   },
 });
 
