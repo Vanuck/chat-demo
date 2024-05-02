@@ -88,8 +88,8 @@ const Chat = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
+    width: "88%",
+    height: "88%",
   },
   appTitle: {
     fontSize: 45,
