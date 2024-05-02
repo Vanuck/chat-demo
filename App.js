@@ -1,4 +1,4 @@
-import { StatusBar } from "expo-status-bar";
+// import { StatusBar } from "expo-status-bar";
 // import the screens
 import Start from "./components/Start";
 import Chat from "./components/Chat";
