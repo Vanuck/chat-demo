@@ -6,17 +6,23 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
-import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Destructure name and background from route.params
-const Chat = ({ route, navigation }) => {
-  const { name, background } = route.params;
+const Chat = ({ route, navigation, db, isConnected }) => {
+  const { name, background, userID } = route.params;
 
   const [messages, setMessages] = useState([]);
   const onSend = (newMessages) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, newMessages)
-    );
+    addDoc(collection(db, "messages"), newMessages[0]);
   };
 
   // Customize speech bubble
@@ -36,33 +42,57 @@ const Chat = ({ route, navigation }) => {
     );
   };
 
-  // useEffect hook to set navigation options
+  // Prevent rendering of InputToolbar when offline
+  const renderInputToolbar = (props) => {
+    if (isConnected) return <InputToolbar {...props} />;
+    else return null;
+  };
+
+  // useEffect hook to set user name
   useEffect(() => {
     navigation.setOptions({ title: name });
   }, []);
 
-  // useEffect hook to set messages options
+  // useEffect hook to set messages db
+  let unsubMessages;
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: "Hello developer",
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: "React Native",
-          avatar: "https://placehold.co/400x400",
-        },
-      },
-      {
-        _id: 2,
-        text: "This is a system message",
-        createdAt: new Date(),
-        system: true,
-      },
-    ]);
-  }, []);
+    if (isConnected === true) {
+      // unregister current onSnapshot() listener to avoid registering multiple listeners when useEffect code is re-executed.
+      if (unsubMessages) unsubMessages();
+      unsubMessages = null;
 
+      const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+      unsubMessages = onSnapshot(q, (documentSnapshot) => {
+        let newMessages = [];
+        documentSnapshot.forEach((doc) => {
+          newMessages.push({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: new Date(doc.data().createdAt.toMillis()),
+          });
+        });
+        cacheMessagesHistory(newMessages);
+        setMessages(newMessages);
+      });
+    } else loadCachedMessages();
+
+    return () => {
+      if (unsubMessages) unsubMessages();
+    };
+  }, [isConnected]);
+
+  const loadCachedMessages = async () => {
+    const cachedMessages = (await AsyncStorage.getItem("chat_messages")) || [];
+    setMessages(JSON.parse(cachedMessages));
+  };
+
+  const cacheMessagesHistory = async (listsToCache) => {
+    try {
+      await AsyncStorage.setItem("chat_messages", JSON.stringify(listsToCache));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   /* Render a View component with dynamic background color */
   return (
     <View style={[styles.container, { backgroundColor: background }]}>
@@ -72,9 +102,11 @@ const Chat = ({ route, navigation }) => {
         placeholder={"Type Here"}
         messages={messages}
         renderBubble={renderBubble}
+        renderInputToolbar={renderInputToolbar}
         onSend={(messages) => onSend(messages)}
         user={{
-          _id: 1,
+          _id: userID,
+          name,
         }}
       />
       {Platform.OS === "android" ? (

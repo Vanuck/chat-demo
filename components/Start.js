@@ -8,15 +8,33 @@ import {
   TouchableOpacity,
   Platform,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
+import { getAuth, signInAnonymously } from "firebase/auth";
 
 // Define the Start component
 const Start = ({ navigation }) => {
+  const auth = getAuth();
   // State for the name input
   const [name, setName] = useState("");
   // State for the background color choice
   const [background, setBackground] = useState("");
   const colors = ["#312F4D", "#212115", "#611340", "#183C0C"];
+
+  const signInUser = () => {
+    signInAnonymously(auth)
+      .then((result) => {
+        navigation.navigate("Chat", {
+          name: name,
+          background: background,
+          userID: result.user.uid,
+        });
+        Alert.alert("Signed in Successfully!");
+      })
+      .catch((error) => {
+        Alert.alert("Unable to sign in, try later again.");
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -57,13 +75,10 @@ const Start = ({ navigation }) => {
           </View>
           {/* Start Chat with TouchableOpacity\*/}
           <TouchableOpacity
+            accessibilityLabel="Start Chatting"
+            accessibilityRole="button"
             style={styles.button}
-            onPress={() =>
-              navigation.navigate("Chat", {
-                name: name,
-                background: background,
-              })
-            }
+            onPress={signInUser}
           >
             <Text style={styles.buttonText}>Start Chatting</Text>
           </TouchableOpacity>
