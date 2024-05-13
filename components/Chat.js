@@ -4,6 +4,7 @@ import {
   View,
   Text,
   Platform,
+  TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
@@ -14,13 +15,17 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomActions from "./CustomActions";
+import MapView from "react-native-maps";
+import { Audio } from "expo-av";
+import { AsyncStorage } from "@react-native-async-storage/async-storage";
 
-// Destructure name and background from route.params
-const Chat = ({ route, navigation, db, isConnected }) => {
+// Extract name and background from route.params
+const Chat = ({ route, navigation, db, isConnected, storage }) => {
   const { name, background, userID } = route.params;
-
   const [messages, setMessages] = useState([]);
+  let soundObject = null;
+
   const onSend = (newMessages) => {
     addDoc(collection(db, "messages"), newMessages[0]);
   };
@@ -46,6 +51,60 @@ const Chat = ({ route, navigation, db, isConnected }) => {
   const renderInputToolbar = (props) => {
     if (isConnected) return <InputToolbar {...props} />;
     else return null;
+  };
+
+  // Render an action button in Inputfield
+  const renderCustomActions = (props) => {
+    return <CustomActions storage={storage} {...props} />;
+  };
+  // Render a MapView if the currentMessage contains location data
+  const renderCustomView = (props) => {
+    const { currentMessage } = props;
+    if (
+      currentMessage.location &&
+      currentMessage.location.latitude !== 0 &&
+      currentMessage.location.longitude !== 0
+    ) {
+      return (
+        <MapView
+          style={{ width: 150, height: 100, borderRadius: 15, margin: 4 }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
+  };
+
+  // Render Audio Messages
+  const renderAudioBubble = (props) => {
+    return (
+      <View {...props}>
+        <TouchableOpacity
+          style={{ backgroundColor: "#FF0", borderRadius: 10, margin: 5 }}
+          onPress={async () => {
+            try {
+              if (soundObject) soundObject.unloadAsync();
+              const { sound } = await Audio.Sound.createAsync({
+                uri: props.currentMessage.audio,
+              });
+              soundObject = sound;
+              await sound.playAsync();
+            } catch (error) {
+              console.error("Error playing audio:", error);
+            }
+          }}
+        >
+          <Text style={{ textAlign: "center", color: "black", padding: 5 }}>
+            Play Sound
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   // useEffect hook to set user name
@@ -78,6 +137,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
 
     return () => {
       if (unsubMessages) unsubMessages();
+      if (soundObject) soundObject.unloadAsync();
     };
   }, [isConnected]);
 
@@ -103,10 +163,17 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         messages={messages}
         renderBubble={renderBubble}
         renderInputToolbar={renderInputToolbar}
+        accessible={true}
+        accessibilityLabel="send"
+        accessibilityHint="Sends a message"
+        accessibilityRole="button"
+        renderActions={renderCustomActions}
+        renderCustomView={renderCustomView}
+        renderMessageAudio={renderAudioBubble}
         onSend={(messages) => onSend(messages)}
         user={{
           _id: userID,
-          name,
+          name: route.params.name,
         }}
       />
       {Platform.OS === "android" ? (

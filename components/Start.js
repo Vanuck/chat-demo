@@ -47,6 +47,8 @@ const Start = ({ navigation }) => {
         <View style={styles.box}>
           <Text>Hello and Welcome!</Text>
           <TextInput
+            accessibilityLabel="Username input"
+            accessibilityRole="text"
             style={styles.textInput}
             value={name}
             onChangeText={setName}
@@ -61,7 +63,7 @@ const Start = ({ navigation }) => {
               <TouchableOpacity
                 accessible={true}
                 accessibilityLabel="More options"
-                accessibilityHint="Lets you choose to send an image or your geolocation."
+                accessibilityHint="Lets you choose your backgroundcolor for your chat."
                 accessibilityRole="button"
                 key={index}
                 style={[
