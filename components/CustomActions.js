@@ -16,12 +16,6 @@ const CustomActions = ({
   const actionSheet = useActionSheet();
   let recordingObject = null;
 
-  useEffect(() => {
-    return () => {
-      recordingObject ? recordingObject.stopAndUnloadAsync() : null;
-    };
-  }, []);
-
   const onActionPress = () => {
     const options = [
       "Choose From Library",
@@ -126,13 +120,14 @@ const CustomActions = ({
         });
 
         Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY)
-          .then((result) => {
-            return result.recording;
+          .then((results) => {
+            return results.recording;
           })
           .then((recording) => {
             recordingObject = recording;
             Alert.alert(
               "You are recording...",
+              undefined,
               [
                 {
                   text: "Cancel",
@@ -176,6 +171,12 @@ const CustomActions = ({
       onSend({ audio: soundURL });
     });
   };
+
+  useEffect(() => {
+    return () => {
+      recordingObject ? recordingObject.stopAndUnloadAsync() : null;
+    };
+  }, []);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onActionPress}>

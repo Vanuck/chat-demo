@@ -11,9 +11,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
+    "infoPlist": {
+      "UIBackgroundModes": ["audio"]
+    },
     "ios": {
       "supportsTablet": true
     },

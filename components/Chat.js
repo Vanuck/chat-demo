@@ -15,10 +15,10 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { AsyncStorage } from "@react-native-async-storage/async-storage";
 import CustomActions from "./CustomActions";
 import MapView from "react-native-maps";
 import { Audio } from "expo-av";
-import { AsyncStorage } from "@react-native-async-storage/async-storage";
 
 // Extract name and background from route.params
 const Chat = ({ route, navigation, db, isConnected, storage }) => {
